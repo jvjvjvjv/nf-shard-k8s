@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --profile all -f docker-compose.yml -n nf-shard
+    kompose.version: 1.37.0 (HEAD)
+  labels:
+    io.kompose.service: postgres
+  name: postgres
+  namespace: nf-shard
+spec:
+  ports:
+    - name: "5432"
+      port: 5432
+      targetPort: 5432
+  selector:
+    io.kompose.service: postgres

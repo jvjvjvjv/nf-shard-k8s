@@ -1,0 +1,39 @@
+# Use Debian-based Node (not Alpine)
+FROM node:20.19-bookworm-slim AS build
+WORKDIR /app
+
+# Install git and OpenSSL
+RUN apt-get update && apt-get install -y \
+    git \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG GIT_REPO=https://github.com/GallVp/nf-shard.git
+ARG GIT_BRANCH=main
+
+RUN git clone --depth 1 --branch ${GIT_BRANCH} ${GIT_REPO} .
+RUN yarn install --immutable --frozen-lockfile
+RUN yarn prisma generate
+RUN yarn build
+
+# Production stage - also Debian
+FROM node:20.19-bookworm-slim
+WORKDIR /app
+
+# Install OpenSSL in runtime
+RUN apt-get update && apt-get install -y \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /app/package.json .
+COPY --from=build /app/yarn.lock .
+COPY --from=build /app/next.config.js ./
+COPY --from=build /app/public ./public
+COPY --from=build /app/build/standalone ./
+COPY --from=build /app/build/static ./build/static
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/node_modules ./node_modules
+
+EXPOSE 3000
+
+CMD ["sh", "-c", "yarn prisma migrate deploy && node server.js"]

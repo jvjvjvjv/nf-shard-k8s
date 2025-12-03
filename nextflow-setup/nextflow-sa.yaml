@@ -1,0 +1,32 @@
+# nextflow-sa.yaml
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: nf-shard
+  name: nextflow-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nextflow-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/status", "pods/log", "pods/exec", "services", "persistentvolumeclaims"]
+  verbs: ["get", "list", "watch", "create", "delete"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["create", "delete", "list", "get", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: nextflow-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: nextflow-role
+subjects:
+- kind: ServiceAccount
+  name: nextflow-sa
+  namespace: nf-shard

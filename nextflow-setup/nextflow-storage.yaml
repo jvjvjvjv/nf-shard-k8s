@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nextflow-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""  # Add this to avoid auto-matching
+  nfs:
+    server: 172.18.0.1
+    path: /srv/nfs/nextflow-work
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nextflow-pvc
+  namespace: nf-shard
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""  # Add this to avoid auto-matching
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: nextflow-pv
