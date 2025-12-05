@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nf-shard.fullname" . }}-app
+  namespace: {{ include "nf-shard.namespace" . }}
+  labels:
+    {{- include "nf-shard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+spec:
+  type: {{ .Values.app.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.app.service.port }}
+    targetPort: {{ .Values.app.service.targetPort }}
+    protocol: TCP
+    {{- if and (eq .Values.app.service.type "NodePort") .Values.app.service.nodePort }}
+    nodePort: {{ .Values.app.service.nodePort }}
+    {{- end }}
+  selector:
+    {{- include "nf-shard.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: app

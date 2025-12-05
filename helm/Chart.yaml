@@ -1,0 +1,6 @@
+apiVersion: v2
+name: nf-shard
+description: A Helm chart for deploying nf-shard with PostgreSQL for individual users
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

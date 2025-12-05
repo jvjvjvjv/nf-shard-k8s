@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nf-shard.fullname" . }}-postgres
+  namespace: {{ include "nf-shard.namespace" . }}
+  labels:
+    {{- include "nf-shard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  type: {{ .Values.postgres.service.type }}
+  ports:
+  - port: {{ .Values.postgres.service.port }}
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    {{- include "nf-shard.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres

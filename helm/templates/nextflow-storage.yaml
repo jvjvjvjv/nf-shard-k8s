@@ -1,0 +1,40 @@
+{{- if and .Values.nextflow.storage.enabled .Values.nextflow.storage.nfs.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "nf-shard.fullname" . }}-nextflow-pv
+  labels:
+    {{- include "nf-shard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: nextflow-storage
+spec:
+  capacity:
+    storage: {{ .Values.nextflow.storage.size }}
+  accessModes:
+    - {{ .Values.nextflow.storage.accessMode }}
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.nextflow.storage.storageClass }}
+  nfs:
+    server: {{ .Values.nextflow.storage.nfs.server }}
+    path: {{ .Values.nextflow.storage.nfs.path }}
+---
+{{- end }}
+{{- if .Values.nextflow.storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nf-shard.fullname" . }}-nextflow
+  namespace: {{ include "nf-shard.namespace" . }}
+  labels:
+    {{- include "nf-shard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: nextflow
+spec:
+  accessModes:
+    - {{ .Values.nextflow.storage.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.nextflow.storage.size }}
+  {{- if .Values.nextflow.storage.storageClass }}
+  storageClassName: {{ .Values.nextflow.storage.storageClass }}
+  {{- end }}
+{{- end }}
+---

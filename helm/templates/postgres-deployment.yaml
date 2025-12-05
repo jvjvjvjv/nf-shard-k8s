@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nf-shard.fullname" . }}-postgres
+  namespace: {{ include "nf-shard.namespace" . }}
+  labels:
+    {{- include "nf-shard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "nf-shard.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "nf-shard.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: postgres
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: postgres
+        image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+        imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+        ports:
+        - containerPort: 5432
+          name: postgres
+          protocol: TCP
+        env:
+        - name: POSTGRES_DB
+          value: {{ .Values.postgres.auth.database }}
+        - name: POSTGRES_USER
+          value: {{ .Values.postgres.auth.username }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "nf-shard.fullname" . }}-secrets
+              key: postgres-password
+        {{- if .Values.postgres.livenessProbe.enabled }}
+        livenessProbe:
+          exec:
+            command:
+              {{- toYaml .Values.postgres.livenessProbe.command | nindent 14 }}
+          failureThreshold: {{ .Values.postgres.livenessProbe.failureThreshold }}
+          periodSeconds: {{ .Values.postgres.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.postgres.livenessProbe.timeoutSeconds }}
+        {{- end }}
+        {{- if .Values.postgres.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command:
+              {{- toYaml .Values.postgres.readinessProbe.command | nindent 14 }}
+          failureThreshold: {{ .Values.postgres.readinessProbe.failureThreshold }}
+          periodSeconds: {{ .Values.postgres.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.postgres.readinessProbe.timeoutSeconds }}
+        {{- end }}
+        {{- if .Values.postgres.persistence.enabled }}
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql
+        {{- end }}
+        resources:
+          {{- toYaml .Values.postgres.resources | nindent 10 }}
+      {{- if .Values.postgres.persistence.enabled }}
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: {{ include "nf-shard.fullname" . }}-postgres-data
+      {{- end }}

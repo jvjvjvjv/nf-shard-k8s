@@ -1,0 +1,112 @@
+# User-specific configuration
+user:
+  name: "user1"  # This will be used to create unique resources
+  username: "user1"
+  password: "password"  # Should be overridden per deployment
+
+# Namespace configuration
+namespace:
+  create: true
+  name: ""  # If empty, will use .Release.Name
+
+# NextJS App Configuration
+app:
+  image:
+    repository: nf-shard
+    tag: local
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: NodePort
+    port: 3000
+    targetPort: 3000
+    nodePort: 30000
+  
+  secretKey: "e5bf3976b3ac4a2fc11b054d3d6f19421ff1670ce739e3741838ff8ea67cd4c7"
+  defaultAccessToken: "ceb6d7c5a9fc1319-78890f02ed21e136-f09661b80172e6e1-8926bf9c880fefaf"
+  
+  logLevel: "INFO"
+  host: "0.0.0.0"
+  
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# PostgreSQL Configuration
+postgres:
+  image:
+    repository: postgres
+    tag: "18-alpine"
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: ClusterIP
+    port: 5432
+  
+  # Health checks
+  livenessProbe:
+    enabled: true
+    command: ["pg_isready", "-U", "postgres", "-d", "postgres"]
+    failureThreshold: 20
+    periodSeconds: 5
+    timeoutSeconds: 2
+  
+  readinessProbe:
+    enabled: true
+    command: ["pg_isready", "-U", "postgres", "-d", "postgres"]
+    failureThreshold: 5
+    periodSeconds: 5
+    timeoutSeconds: 2
+  
+  auth:
+    database: postgres
+    username: postgres
+    password: postgres123
+  
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+  
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# Nextflow Configuration
+nextflow:
+  serviceAccount:
+    create: true
+    name: ""  # If empty, will use template name
+  
+  storage:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+    accessMode: ReadWriteMany
+
+  nfs:
+    enabled: true
+    server: "172.18.0.1"
+    path: "/srv/nfs/nextflow-work"
+  
+
+# Ingress configuration (optional)
+#ingress:
+#  enabled: false
+#  className: "nginx"
+#  annotations: {}
+#  hosts:
+#    - host: ""  # e.g., user1.nf-shard.example.com
+#      paths:
+#        - path: /
+#          pathType: Prefix
+#  tls: []

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nf-shard.fullname" . }}-app
+  namespace: {{ include "nf-shard.namespace" . }}
+  labels:
+    {{- include "nf-shard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "nf-shard.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: app
+  template:
+    metadata:
+      labels:
+        {{- include "nf-shard.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: app
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: nf-shard
+        image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
+        imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.app.service.targetPort }}
+          name: http
+          protocol: TCP
+        env:
+        - name: APP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "nf-shard.fullname" . }}-secrets
+              key: app-username
+        - name: APP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "nf-shard.fullname" . }}-secrets
+              key: app-password
+        - name: APP_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "nf-shard.fullname" . }}-secrets
+              key: app-secret-key
+        - name: DEFAULT_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "nf-shard.fullname" . }}-secrets
+              key: default-access-token
+        - name: POSTGRES_URI
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "nf-shard.fullname" . }}-secrets
+              key: postgres-uri
+        - name: LOG_LEVEL
+          value: {{ .Values.app.logLevel }}
+        - name: HOST
+          value: {{ .Values.app.host }}
+        resources:
+          {{- toYaml .Values.app.resources | nindent 10 }}

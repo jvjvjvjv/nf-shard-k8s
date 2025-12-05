@@ -82,3 +82,17 @@ kubectl rollout restart deployment.apps/nextjs -n nf-shard
 
 # Start nfs server (required for the nextflow pv to work)
 sudo systemctl start nfs-server
+
+# Example creating a deployment for new user
+helm install user1-nfshard ./helm \
+	--set user.name=user1 \
+	--set user.username=user1 \
+	--set user.password=user1pass \
+	--set app.service.nodePort=30000 \
+	--set nextflow.storage.nfs.enabled=true \
+	--set nextflow.storage.nfs.server=172.18.0.1 \
+	--set nextflow.storage.nfs.path=/srv/nfs/user1/nextflow
+
+helm list
+helm uninstall user1-nfshard
+# To make this fully work simultaneously, you need to start the kind cluster with multiple ports, and map each new user to one of the ports
