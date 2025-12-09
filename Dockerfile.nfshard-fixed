@@ -1,4 +1,4 @@
-# Use Debian-based Node (not Alpine)
+# Use Debian-based Node
 FROM node:20.19-bookworm-slim AS build
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN yarn install --immutable --frozen-lockfile
 RUN yarn prisma generate
 RUN yarn build
 
-# Production stage - also Debian
+# Production stage
 FROM node:20.19-bookworm-slim
 WORKDIR /app
 

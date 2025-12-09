@@ -88,6 +88,9 @@ helm install user1-nfshard ./helm \
 	--set user.name=user1 \
 	--set user.username=user1 \
 	--set user.password=user1pass \
+	--set app.secretKey=$(openssl rand -hex 32) \
+	--set app.defaultAccessToken=$(uuidgen)-$(uuidgen) \
+	--set postgres.auth.password=postgres-user1-$(openssl rand -hex 8) \
 	--set app.service.nodePort=30000 \
 	--set nextflow.storage.nfs.enabled=true \
 	--set nextflow.storage.nfs.server=172.18.0.1 \

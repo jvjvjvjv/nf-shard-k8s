@@ -1,4 +1,4 @@
-# nextflow-job.yaml (Nextflow handles git)
+# nextflow-job.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:

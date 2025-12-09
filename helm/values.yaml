@@ -97,16 +97,3 @@ nextflow:
     enabled: true
     server: "172.18.0.1"
     path: "/srv/nfs/nextflow-work"
-  
-
-# Ingress configuration (optional)
-#ingress:
-#  enabled: false
-#  className: "nginx"
-#  annotations: {}
-#  hosts:
-#    - host: ""  # e.g., user1.nf-shard.example.com
-#      paths:
-#        - path: /
-#          pathType: Prefix
-#  tls: []
