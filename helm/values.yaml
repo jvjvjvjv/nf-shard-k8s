@@ -13,7 +13,7 @@ namespace:
 app:
   image:
     repository: nf-shard
-    tag: local
+    tag: latest
     pullPolicy: IfNotPresent
   
   service:
@@ -39,8 +39,8 @@ app:
 # PostgreSQL Configuration
 postgres:
   image:
-    repository: postgres
-    tag: "18-alpine"
+    repository: bitnami/postgresql
+    tag: "latest"
     pullPolicy: IfNotPresent
   
   service:
@@ -92,8 +92,3 @@ nextflow:
     size: 1Gi
     storageClass: ""
     accessMode: ReadWriteMany
-
-  nfs:
-    enabled: true
-    server: "172.18.0.1"
-    path: "/srv/nfs/nextflow-work"
