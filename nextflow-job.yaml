@@ -3,14 +3,14 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: nextflow-pipeline
-  namespace: nf-shard
+  namespace: user1-nfshard
 spec:
   template:
     spec:
-      serviceAccountName: nextflow-sa
+      serviceAccountName: user1-nfshard-nf-shard
       containers:
       - name: nextflow
-        image: nextflow/nextflow
+        image: registry.rc.umass.edu:5050/harmony/infrastructure/user-resources/nextflow
         imagePullPolicy: IfNotPresent
         command: ["/bin/bash", "-c"]
         args: ["nextflow run https://github.com/jvjvjvjv/nextflow-testing.git -profile harmony,shard -r main --num_replicates 2"]
@@ -32,19 +32,22 @@ spec:
             fieldRef:
               fieldPath: spec.serviceAccountName
         - name: NXF_K8S_STORAGE_CLAIM_NAME
-          value: nextflow-pvc
+          value: user1-nfshard-nf-shard-nextflow
         - name: NXF_K8S_STORAGE_MOUNT_PATH
           value: /workspace
 
         # Tower/nf-shard config
         - name: TOWER_ACCESS_TOKEN
-          value: "ceb6d7c5a9fc1319-78890f02ed21e136-f09661b80172e6e1-8926bf9c880fefaf"
+          valueFrom:
+            secretKeyRef:
+              name: user1-nfshard-nf-shard-secrets
+              key: default-access-token
         - name: TOWER_API_ENDPOINT
-          value: "http://nextjs:3000/api"
+          value: "http://user1-nfshard-nf-shard-app:3000/api"
       volumes:
       - name: workspace
         persistentVolumeClaim:
-          claimName: nextflow-pvc
+          claimName: user1-nfshard-nf-shard-nextflow
       restartPolicy: Never
   backoffLimit: 0
   ttlSecondsAfterFinished: 3600
