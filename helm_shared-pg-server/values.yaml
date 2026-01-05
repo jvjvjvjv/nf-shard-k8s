@@ -1,0 +1,46 @@
+# User-specific configuration
+user:
+  name: "user1"  # This will be used to create unique resources
+  username: "user1"  # This will be used to log in to the app
+  password: "password"  # Should be overridden per deployment
+
+# Namespace configuration
+namespace:
+  create: true
+  name: ""  # If empty, will use .Release.Name
+
+# NextJS App Configuration
+app:
+  image:
+    repository: nf-shard
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: NodePort
+    port: 3000
+    targetPort: 3000
+    nodePort: 30000
+  
+  secretKey: ""  # Should be overridden per deployment
+  defaultAccessToken: ""  # Should be overridden per deployment
+  
+  logLevel: "INFO"
+  host: "0.0.0.0"
+  
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# PostgreSQL Configuration
+postgres:
+  auth:  
+    host: ""  # Must match existing postgres pod IP
+    port: 5432
+    username: postgres  # Must match admin account of existing postgres server
+    password: postgres123
+    database: ""  # If empty, will use .Release.name

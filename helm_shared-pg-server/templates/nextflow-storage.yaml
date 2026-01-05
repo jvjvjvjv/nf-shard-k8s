@@ -1,0 +1,20 @@
+{{- if .Values.nextflow.storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nf-shard.fullname" . }}-nextflow
+  namespace: {{ include "nf-shard.namespace" . }}
+  labels:
+    {{- include "nf-shard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: nextflow
+spec:
+  accessModes:
+    - {{ .Values.nextflow.storage.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.nextflow.storage.size }}
+  {{- if .Values.nextflow.storage.storageClass }}
+  storageClassName: {{ .Values.nextflow.storage.storageClass }}
+  {{- end }}
+{{- end }}
+---

@@ -16,10 +16,12 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:18 # You can change the version here
+          image: postgres:18
           env:
+            - name: POSTGRES_USER
+              value: "postgres"
             - name: POSTGRES_PASSWORD
-              value: "your-secret-password" # Make sure to store it securely
+              value: "password"
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql
