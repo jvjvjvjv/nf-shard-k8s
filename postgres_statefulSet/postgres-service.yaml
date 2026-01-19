@@ -1,12 +1,28 @@
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: postgres
+#  namespace: postgres-shared
+#spec:
+#  clusterIP: None  # This makes the service headless (useful for StatefulSet)
+#  ports:
+#    - port: 5432
+#      name: postgres
+#  selector:
+#    app: postgres
+---
+# NodePort service (for external access)
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: postgres-external
   namespace: postgres-shared
 spec:
-  clusterIP: None  # This makes the service headless (useful for StatefulSet)
+  type: NodePort
   ports:
     - port: 5432
+      targetPort: 5432
+      nodePort: 30432
       name: postgres
   selector:
     app: postgres

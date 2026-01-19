@@ -1,0 +1,11 @@
+postgres:
+  image: postgres:18
+  user: postgres
+  password: password
+  
+storage:
+  size: 10Gi
+  storageClassName: vastdata-vast1
+
+service:
+  nodePort: 30432

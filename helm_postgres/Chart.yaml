@@ -1,0 +1,5 @@
+apiVersion: v2
+name: postgres-shared
+description: Postgres server with nodeport for nf-shard
+version: 0.1.0
+appVersion: "1"
