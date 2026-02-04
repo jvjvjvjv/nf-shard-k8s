@@ -1,0 +1,145 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nextflow-pvc-dynamic
+  namespace: nextflow
+spec:
+  storageClassName: vastdata-vast1
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nf-shard-secrets
+  namespace: nextflow
+type: Opaque
+stringData:
+  app-username: "user1"
+  app-password: "user1pass"
+  app-secret-key: "your-secret-key-here"
+  default-access-token: "0f4f2646-2231-4459-b36d-175f0c307311"
+  postgres-uri: "postgresql://postgres:password@postgres-external.postgres-nfshard.svc.cluster.local:5432/user1-nfshard"
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nextflow-shard
+  namespace: nextflow
+spec:
+  template:
+    spec:
+      serviceAccountName: nextflow-sa-cr
+
+      # Nf-shard sidecar container
+      initContainers:
+      - name: nf-shard
+        image: registry.rc.umass.edu:5050/harmony/infrastructure/user-resources/nf-shard:base
+        imagePullPolicy: Always
+        restartPolicy: Always
+        ports:
+        - containerPort: 3000
+          name: shard-port
+          protocol: TCP
+
+        # Make sure nf-shard is running before starting nextflow pod
+        readinessProbe:
+          httpGet:
+            path: /api
+            port: 3000
+          failureThreshold: 30
+          periodSeconds: 5
+          #initialDelaySeconds: 10
+
+        env:
+        - name: APP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: nf-shard-secrets
+              key: app-username
+        - name: APP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nf-shard-secrets
+              key: app-password
+        - name: APP_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: nf-shard-secrets
+              key: app-secret-key
+        - name: DEFAULT_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: nf-shard-secrets
+              key: default-access-token
+        - name: POSTGRES_URI
+          valueFrom:
+            secretKeyRef:
+              name: nf-shard-secrets
+              key: postgres-uri
+        - name: LOG_LEVEL
+          value: "INFO"
+        # This is required to override K8s default HOSTNAME (gets set to pod name)
+        # Allows you to connect via localhost
+        - name: HOSTNAME
+          value: "0.0.0.0"
+
+      # Nextflow container
+      containers:
+      - name: nextflow
+        image: registry.rc.umass.edu:5050/harmony/infrastructure/user-resources/nextflow
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            nextflow pull https://github.com/jvjvjvjv/nextflow-testing.git -r main
+            nextflow run https://github.com/jvjvjvjv/nextflow-testing.git \
+              -profile docker,harmony,shard \
+              -r main \
+              --num_replicates 2
+
+        workingDir: /workspace
+        volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+        env:
+        - name: NXF_WORK
+          value: /workspace/work
+        - name: NXF_HOME
+          value: /workspace/.nextflow
+        - name: NXF_K8S_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NXF_K8S_POD_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
+        - name: NXF_K8S_STORAGE_CLAIM_NAME
+          value: nextflow-pvc-dynamic
+        - name: NXF_K8S_STORAGE_MOUNT_PATH
+          value: /workspace
+
+        # Tower/nf-shard config
+        - name: TOWER_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: nf-shard-secrets
+              key: default-access-token
+        - name: TOWER_API_ENDPOINT
+          value: "http://localhost:3000/api"
+
+      volumes:
+      - name: workspace
+        persistentVolumeClaim:
+          claimName: nextflow-pvc-dynamic
+
+      restartPolicy: Never
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
