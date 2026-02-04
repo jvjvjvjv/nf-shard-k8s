@@ -13,5 +13,5 @@ helm install "$userid"-nfshard ./helm_shared-pg-server --namespace nf-shard --cr
         --set app.service.nodePort=30001 \
         --set postgres.auth.user=postgres \
         --set postgres.auth.password=password \
-        --set postgres.auth.host=postgres-0.postgres.postgres-shared.svc.cluster.local
+        --set postgres.auth.host=postgres-external.postgres-nfshard.svc.cluster.local
 #        --set postgres.auth.host=postgres-0.postgres.postgres-shared.svc.cluster.local

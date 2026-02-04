@@ -13,7 +13,7 @@ spec:
         image: registry.rc.umass.edu:5050/harmony/infrastructure/user-resources/nextflow
         imagePullPolicy: IfNotPresent
         command: ["/bin/bash", "-c"]
-        args: ["nextflow run https://github.com/jvjvjvjv/nextflow-testing.git -profile harmony,shard -r main --num_replicates 2"]
+        args: ["nextflow pull https://github.com/jvjvjvjv/nextflow-testing.git -r main; nextflow run https://github.com/jvjvjvjv/nextflow-testing.git -profile docker,harmony,shard -r main --num_replicates 2"]
         workingDir: /workspace
         volumeMounts:
         - name: workspace
@@ -38,9 +38,10 @@ spec:
 
         # Tower/nf-shard config
         - name: TOWER_ACCESS_TOKEN
-          value: 0f4f2646-2231-4459-b36d-175f0c307311
+          value: dba91ab1-1369-4f19-94ca-7e1c3488a440
         - name: TOWER_API_ENDPOINT
-          value: "http://192.168.123.33:3000/api"
+          value: "http://192.168.241.178:3000/api"
+            
       volumes:
       - name: workspace
         persistentVolumeClaim:
