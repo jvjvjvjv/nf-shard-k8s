@@ -1,0 +1,35 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nextflow-sa
+  namespace: nextflow
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: nextflow-role
+  namespace: nextflow
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/status", "pods/log", "pods/exec", "services", "persistentvolumeclaims"]
+  verbs: ["get", "list", "watch", "create", "delete"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["create", "delete", "list", "get", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nextflow-rolebinding
+  namespace: nextflow
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: nextflow-role
+subjects:
+- kind: ServiceAccount
+  name: nextflow-sa
+  namespace: nextflow

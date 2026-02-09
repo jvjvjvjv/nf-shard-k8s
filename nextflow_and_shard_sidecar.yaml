@@ -35,7 +35,7 @@ metadata:
 spec:
   template:
     spec:
-      serviceAccountName: nextflow-sa-cr
+      serviceAccountName: nextflow-sa
 
       # Nf-shard sidecar container
       initContainers:
