@@ -1,0 +1,53 @@
+# Job configuration
+job:
+  name: nextflow-pipeline
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+
+# Nextflow configuration
+nextflow:
+  image:
+    repository: registry.rc.umass.edu:5050/harmony/infrastructure/user-resources/nextflow
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  # The nextflow run command
+  runCommand: |
+    nextflow pull https://github.com/jvjvjvjv/nextflow-testing.git -r main
+    nextflow run https://github.com/jvjvjvjv/nextflow-testing.git \
+      -profile docker,harmony,shard \
+      -r main \
+      --num_replicates 2
+
+# nf-shard configuration
+nfShard:
+  image:
+    repository: registry.rc.umass.edu:5050/harmony/infrastructure/user-resources/nf-shard
+    tag: base
+    pullPolicy: Always
+  
+  logLevel: INFO
+  
+  readinessProbe:
+    failureThreshold: 30
+    periodSeconds: 5
+
+# Secrets
+secrets:
+  appUsername: "user1"
+  appPassword: "user1pass"
+  appSecretKey: "your-secret-key-here"
+  defaultAccessToken: "0f4f2646-2231-4459-b36d-175f0c307311"
+  postgresUri: "postgresql://postgres:password@postgres-external.postgres-nfshard.svc.cluster.local:5432/user1-nfshard"
+
+# Storage configuration
+storage:
+  pvcName: nextflow-pvc-dynamic
+  storageClassName: vastdata-vast1
+  accessMode: ReadWriteMany
+  size: 1Gi
+  workspacePath: /workspace
+
+# Service account
+serviceAccount:
+  name: nextflow-sa
