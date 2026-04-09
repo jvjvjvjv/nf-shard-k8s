@@ -13,6 +13,8 @@ spec:
       labels:
         app: pw-manager
     spec:
+      imagePullSecrets:
+        - name: gitlab-registry
       containers:
         - name: pw-manager
           image: {{ .Values.pwManager.image }}
@@ -22,6 +24,8 @@ spec:
           env:
             - name: PG_HOST
               value: "postgres-nfshard"
+            - name: PG_EXTERNAL_HOST
+              value: {{ .Values.postgres.service.externalHost }}
             - name: PG_PORT
               value: {{ .Values.postgres.service.port | quote }}
             - name: PG_ADMIN_USER
@@ -30,7 +34,7 @@ spec:
               value: {{ .Values.postgres.password | quote }}
           volumeMounts:
             - name: pw-manager-data
-              mountPath: /app
+              mountPath: /app/data
       volumes:
         - name: pw-manager-data
           persistentVolumeClaim:

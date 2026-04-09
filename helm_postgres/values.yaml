@@ -6,11 +6,12 @@ postgres:
     size: 10Gi
     storageClassName: vastdata-vast1
   service:
+    externalHost: k8s-gw1.harmony.rc.umass.edu
     port: 5432
 
 pwManager:
   image: "registry.rc.umass.edu:5050/harmony/infrastructure/user-resources/shard-pw-manager"
-  nodePort: 30500
+  port: 5000
   storage:
     size: 1Gi
     storageClassName: vastdata-vast1
