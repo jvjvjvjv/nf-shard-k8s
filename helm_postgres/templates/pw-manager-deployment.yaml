@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pw-manager
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pw-manager
+  template:
+    metadata:
+      labels:
+        app: pw-manager
+    spec:
+      containers:
+        - name: pw-manager
+          image: {{ .Values.pwManager.image }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          env:
+            - name: PG_HOST
+              value: "postgres-nfshard"
+            - name: PG_PORT
+              value: {{ .Values.postgres.service.port | quote }}
+            - name: PG_ADMIN_USER
+              value: {{ .Values.postgres.user | quote }}
+            - name: PG_ADMIN_PASSWORD
+              value: {{ .Values.postgres.password | quote }}
+          volumeMounts:
+            - name: pw-manager-data
+              mountPath: /app
+      volumes:
+        - name: pw-manager-data
+          persistentVolumeClaim:
+            claimName: pw-manager-pvc

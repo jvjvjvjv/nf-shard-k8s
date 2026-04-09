@@ -2,10 +2,15 @@ postgres:
   image: postgres:18
   user: postgres
   password: password
-  
-storage:
-  size: 10Gi
-  storageClassName: vastdata-vast1
+  storage:
+    size: 10Gi
+    storageClassName: vastdata-vast1
+  service:
+    port: 5432
 
-service:
-  nodePort: 30432
+pwManager:
+  image: "registry.rc.umass.edu:5050/harmony/infrastructure/user-resources/shard-pw-manager"
+  nodePort: 30500
+  storage:
+    size: 1Gi
+    storageClassName: vastdata-vast1

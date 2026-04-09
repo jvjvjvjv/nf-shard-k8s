@@ -33,5 +33,5 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: {{ .Values.storage.size }}
-        storageClassName: {{ .Values.storage.storageClassName }}
+            storage: {{ .Values.postgres.storage.size }}
+        storageClassName: {{ .Values.postgres.storage.storageClassName }}
